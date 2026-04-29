@@ -125,8 +125,22 @@ function tidyCode(value: string) {
   return value.toLocaleUpperCase("en-US").replace(/[^A-Z0-9]/g, "").slice(0, 8);
 }
 
+function itemKey(value: string) {
+  return value.normalize("NFC").trim().replace(/\s+/g, " ").toLocaleUpperCase("vi-VN");
+}
+
 function App() {
-  const socket = useMemo<Socket>(() => io(socketUrl), []);
+  const socket = useMemo<Socket>(
+    () =>
+      io(socketUrl, {
+        transports: ["websocket"],
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelayMax: 5000,
+        timeout: 20000
+      }),
+    []
+  );
   const [screen, setScreen] = useState<Screen>("role");
   const [game, setGame] = useState<GameState | null>(null);
   const [rooms, setRooms] = useState<GameSummary[]>([]);
@@ -143,7 +157,10 @@ function App() {
   const [joinCode, setJoinCode] = useState("");
 
   useEffect(() => {
-    const onConnect = () => setConnected(true);
+    const onConnect = () => {
+      setRestoreTried(false);
+      setConnected(true);
+    };
     const onDisconnect = () => setConnected(false);
     const onState = (state: GameState) => {
       setGame(state);
@@ -478,9 +495,10 @@ function App() {
             {game.player.card?.map((cell) => {
               const marked = cell.free || game.player?.markedIds?.includes(cell.id);
               const called = cell.free || game.calledItems.some((item) => item.label.toLocaleUpperCase("vi-VN") === cell.id);
+              const latestCalled = Boolean(game.currentItem && itemKey(game.currentItem) === cell.id);
               return (
                 <button
-                  className={`bingo-cell ${marked ? "marked" : ""} ${called ? "called" : ""}`}
+                  className={`bingo-cell ${marked ? "marked" : ""} ${called ? "called" : ""} ${latestCalled ? "latest-called" : ""}`}
                   key={`${cell.row}-${cell.col}`}
                   onClick={() => toggleCell(cell.id)}
                   disabled={!called || game.player?.status === "bingo"}
@@ -497,8 +515,8 @@ function App() {
               <span className="pill">{game.calledCount}</span>
             </div>
             <div className="called-list">
-              {game.calledItems.slice().reverse().map((item) => (
-                <span key={`${item.index}-${item.label}`}>{item.label}</span>
+              {game.calledItems.slice().reverse().map((item, index) => (
+                <span className={index === 0 ? "latest-called-item" : ""} key={`${item.index}-${item.label}`}>{item.label}</span>
               ))}
             </div>
           </section>
