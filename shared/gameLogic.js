@@ -1,3 +1,5 @@
+import { MAX_BINGO_ITEMS, MIN_BINGO_ITEMS } from "./constants.js";
+
 export const BOARD_SIZE = 5;
 export const FREE_CELL = "FREE";
 
@@ -29,7 +31,7 @@ export function parseItemList(value) {
       seen.add(key);
       return true;
     })
-    .slice(0, 120);
+    .slice(0, MAX_BINGO_ITEMS);
 }
 
 export function shuffleItems(items, random = Math.random) {
@@ -42,7 +44,7 @@ export function shuffleItems(items, random = Math.random) {
 }
 
 export function createBingoCard(items, random = Math.random) {
-  if (!Array.isArray(items) || items.length < 24) {
+  if (!Array.isArray(items) || items.length < MIN_BINGO_ITEMS) {
     throw new Error("Bingo cần ít nhất 24 mục khác nhau.");
   }
 

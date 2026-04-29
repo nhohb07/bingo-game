@@ -6,103 +6,24 @@ Web game Bingo realtime cho lớp học/nhóm nhỏ. Chủ game tạo phòng, nh
 
 - Không cần đăng nhập/đăng ký.
 - Realtime bằng Socket.IO.
-- Hỗ trợ nhiều phòng bằng mã phòng.
-- Người chơi có thể chọn phòng đang mở hoặc vào bằng link `?code=XXXXX`.
+- Hỗ trợ nhiều phòng bằng mã phòng hoặc link `?code=XXXXX`.
 - Host tạo danh sách mục gọi, tối thiểu 24 mục khác nhau.
 - Server sinh bảng 5x5 riêng cho từng người chơi, có ô giữa tự do.
 - Người chơi chỉ đánh dấu được ô đã được host gọi.
 - Server kiểm tra Bingo theo hàng, cột và hai đường chéo.
-- Chủ game có thể random 36 mục từ kho 1000 cụm 2 từ có nghĩa.
-- Kho random gồm các chủ đề: con vật, đồ vật, tên người, lớp học, tiếng Anh, nhà cửa, cảnh vật.
+- Chủ game có thể random 36 mục từ kho khoảng 1000 cụm 2 từ có nghĩa.
 - Có popup luật chơi.
-- UI tiếng Việt, pastel, mobile-first, cùng format với các game hiện có.
-- Tên người chơi và session tạm thời lưu bằng `localStorage`.
-
-## Tech Stack
-
-- Frontend: React, TypeScript, Vite
-- Backend: Node.js, Express, Socket.IO
-- Process manager: PM2
-- Tests: Vitest
-
-## Install
-
-```bash
-npm install
-```
+- UI tiếng Việt, pastel, mobile-first.
+- Browser `localStorage` lưu tên người chơi và session host/player.
 
 ## Development
 
 ```bash
+npm install
 npm run dev
 ```
 
 Frontend dev server chạy ở Vite port `5173`. Backend dev server chạy ở port `6680`.
-
-Mở:
-
-```text
-http://localhost:5173
-```
-
-## Build
-
-```bash
-npm run build
-```
-
-Build output nằm ở `dist/`.
-
-## Run Production Locally
-
-```bash
-HOST=0.0.0.0 PORT=6680 npm start
-```
-
-Mở:
-
-```text
-http://localhost:6680
-```
-
-Trong LAN:
-
-```text
-http://<LAN_IP>:6680
-```
-
-## PM2
-
-Start:
-
-```bash
-npm run pm2:start
-```
-
-Restart sau khi sửa code:
-
-```bash
-npm run pm2:restart
-```
-
-Logs:
-
-```bash
-npm run pm2:logs
-```
-
-Save process list:
-
-```bash
-npm run pm2:save
-```
-
-Stop/delete:
-
-```bash
-npm run pm2:stop
-npm run pm2:delete
-```
 
 ## Scripts
 
@@ -128,29 +49,23 @@ npm run pm2:logs     # xem logs PM2
 ## Project Structure
 
 ```text
-client/
-  src/
-    App.tsx
-    main.tsx
-    styles.css
-    wordBank.ts
-server/
-  index.js
-shared/
-  gameLogic.js
-tests/
-  gameLogic.test.js
-ecosystem.config.cjs
-vite.config.ts
-vitest.config.ts
-requirements.md
+client/src/App.tsx          # socket/session orchestration
+client/src/components/      # reusable UI components
+client/src/screens/         # screen-level UI
+client/src/data/            # sample items and word bank
+server/index.js             # thin HTTP/Socket.IO bootstrap
+server/socketHandlers.js    # realtime event flow
+server/lib/                 # store, serializers, factories, crypto helpers
+shared/                     # pure game rules and constants
+tests/                      # domain tests
+docs/                       # architecture and socket event contract
 ```
 
-## Storage Model
+## Documentation
 
-- Server state nằm trong memory.
-- Restart server sẽ mất phòng đang mở.
-- Browser `localStorage` lưu tên người chơi và session host/player để reload lại phòng nếu server chưa restart.
+- [Architecture](docs/ARCHITECTURE.md)
+- [Socket events](docs/EVENTS.md)
+- [Requirements](requirements.md)
 
 ## Before Push
 
@@ -159,5 +74,3 @@ npm run typecheck
 npm test
 npm run build
 ```
-
-Repo nên commit các file source và lockfile, không commit `node_modules/` hoặc `dist/`.
