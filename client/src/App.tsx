@@ -288,8 +288,46 @@ function App() {
 
   function toggleCell(cellId: string) {
     if (!game || !playerId) return;
+    const previousMarkedIds = game.player?.markedIds || [];
+    const previousMarkedCount = game.player?.markedCount || 0;
+    const cell = game.player?.card?.find((item) => item.id === cellId);
+
+    if (cell && !cell.free) {
+      setGame((current) => {
+        if (!current?.player || current.player.id !== playerId) return current;
+        const marked = new Set(current.player.markedIds || []);
+        if (marked.has(cellId)) {
+          marked.delete(cellId);
+        } else {
+          marked.add(cellId);
+        }
+        const markedIds = Array.from(marked);
+        return {
+          ...current,
+          player: {
+            ...current.player,
+            markedIds,
+            markedCount: markedIds.length
+          }
+        };
+      });
+    }
+
     socket.emit("card:toggle", { code: game.code, playerId, cellId }, (response: SocketResponse) => {
-      if (!response.ok) setNotice(response.message || "Ô này chưa được gọi.");
+      if (!response.ok) {
+        setGame((current) => {
+          if (!current?.player || current.player.id !== playerId) return current;
+          return {
+            ...current,
+            player: {
+              ...current.player,
+              markedIds: previousMarkedIds,
+              markedCount: previousMarkedCount
+            }
+          };
+        });
+        setNotice(response.message || "Ô này chưa được gọi.");
+      }
     });
   }
 
